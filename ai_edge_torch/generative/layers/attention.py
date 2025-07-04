@@ -232,13 +232,17 @@ class CausalSelfAttention(CausalSelfAttentionBase):
       k += lora_utils.apply_lora(x, lora.attention.key, shape=k.shape)
       v += lora_utils.apply_lora(x, lora.attention.value, shape=v.shape)
 
-    q = self.query_norm(q)
-    k = self.key_norm(k)
-    v = self.value_norm(v)
-
     q = q.reshape(B, T, -1, self.config.head_dim)
     k = k.reshape(B, T, -1, self.config.head_dim)
     v = v.reshape(B, T, -1, self.config.head_dim)
+
+    # TODO: Revision for compatible with Qwen HF modeling as belows
+    # query_states = self.q_norm(self.q_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
+    # key_states = self.k_norm(self.k_proj(hidden_states).view(hidden_shape)).transpose(1, 2)
+    # value_states = self.v_proj(hidden_states).view(hidden_shape).transpose(1, 2)
+    q = self.query_norm(q)
+    k = self.key_norm(k)
+    v = self.value_norm(v)
 
     if rope is not None:
       # Compute rotary positional embedding for query and key.
